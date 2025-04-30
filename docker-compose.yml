@@ -1,16 +1,58 @@
 version: '3'
 services:
+
+  # 🧠 Service Zookeeper (coordination des brokers Kafka)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.1
+    container_name: zookeeper
+    ports:
+      - "2181:2181"  # Port utilisé par les brokers Kafka pour communiquer avec Zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000  # Intervalle de synchronisation interne
 
-  kafka:
+  # 🟦 Broker Kafka 1 (principal — crée le topic)
+  kafka-broker-1:
     image: confluentinc/cp-kafka:7.2.1
+    container_name: kafka-broker-1
     ports:
-      - "9092:9092"
+      - "9092:9092"  # Port d'accès externe au broker
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: 1  # ID unique pour ce broker
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # Connexion à Zookeeper
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092  # Nom DNS utilisé pour se faire connaître
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT  # Protocole de communication
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3  # Réplication des offsets sur 3 brokers
+      KAFKA_CREATE_TOPICS: "events-topic:3:3"  # Création automatique du topic à 3 partitions et 3 réplicas
+    depends_on:
+      - zookeeper  # Ce service attend que Zookeeper soit prêt
 
+  # 🟩 Broker Kafka 2
+  kafka-broker-2:
+    image: confluentinc/cp-kafka:7.2.1
+    container_name: kafka-broker-2
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+
+  # 🟥 Broker Kafka 3
+  kafka-broker-3:
+    image: confluentinc/cp-kafka:7.2.1
+    container_name: kafka-broker-3
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-3:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper

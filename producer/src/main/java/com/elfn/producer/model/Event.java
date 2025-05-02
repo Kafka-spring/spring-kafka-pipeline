@@ -9,7 +9,7 @@ import java.time.Instant;
 
 /**
  * @Author: Elimane
- *
+ * <p>
  * Représente un événement métier à envoyer vers Kafka.
  */
 

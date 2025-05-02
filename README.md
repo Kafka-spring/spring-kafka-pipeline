@@ -49,7 +49,7 @@
 
 ## 📊 Diagramme de flux
 
-> Remplace ce bloc Mermaid par l’image si GitHub ne le supporte pas en rendu direct
+
 
 ```mermaid
 flowchart TD

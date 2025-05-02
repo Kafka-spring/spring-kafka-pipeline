@@ -6,26 +6,27 @@ services:
     image: confluentinc/cp-zookeeper:7.2.1
     container_name: zookeeper
     ports:
-      - "2181:2181"  # Port utilisé par les brokers Kafka pour communiquer avec Zookeeper
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000  # Intervalle de synchronisation interne
+      ZOOKEEPER_TICK_TIME: 2000
 
-  # 🟦 Broker Kafka 1 (principal — crée le topic)
+  # 🟦 Broker Kafka 1 (exposé en localhost:9092)
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka-broker-1
     ports:
-      - "9092:9092"  # Port d'accès externe au broker
+      - "9092:9092"
     environment:
-      KAFKA_BROKER_ID: 1  # ID unique pour ce broker
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # Connexion à Zookeeper
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092  # Nom DNS utilisé pour se faire connaître
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT  # Protocole de communication
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3  # Réplication des offsets sur 3 brokers
-      KAFKA_CREATE_TOPICS: "events-topic:3:3"  # Création automatique du topic à 3 partitions et 3 réplicas
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CREATE_TOPICS: "events-topic:3:3"
     depends_on:
-      - zookeeper  # Ce service attend que Zookeeper soit prêt
+      - zookeeper
 
   # 🟩 Broker Kafka 2
   kafka-broker-2:
@@ -36,7 +37,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     depends_on:
@@ -51,7 +53,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-3:9094
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     depends_on:

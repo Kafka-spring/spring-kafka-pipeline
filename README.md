@@ -56,10 +56,10 @@ flowchart TD
   subgraph DockerCompose
 
     subgraph Client
-      A[Postman] -->|POST /api/events| B[API REST - Producer]
+      A[Postman] -->|POST /api/events| B[Spring Boot - Producer]
     end
 
-    subgraph Producteur
+    subgraph Cluster Kafka
       B -->|send message| C[Kafka Topic: events-topic]
     end
 

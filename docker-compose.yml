@@ -1,7 +1,7 @@
 version: '3'
 services:
 
-  # 🧠 Service Zookeeper (coordination des brokers Kafka)
+  # 🧠 Zookeeper
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.1
     container_name: zookeeper
@@ -11,7 +11,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  # 🟦 Broker Kafka 1 (exposé en localhost:9092)
+  # 🟦 Kafka Broker 1 (avec création du topic)
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka-broker-1
@@ -21,14 +21,23 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_CREATE_TOPICS: "events-topic:3:3"
+    volumes:
+      - kafka-broker-1-data:/var/lib/kafka/data
     depends_on:
       - zookeeper
+    command: >
+      bash -c "
+        /etc/confluent/docker/run & 
+        sleep 20 && 
+        kafka-topics --create --if-not-exists --bootstrap-server kafka-broker-1:9092 --replication-factor 3 --partitions 3 --topic events-topic &&
+        wait
+      "
 
-  # 🟩 Broker Kafka 2
+
+  # 🟩 Kafka Broker 2
   kafka-broker-2:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka-broker-2
@@ -38,13 +47,15 @@ services:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    volumes:
+      - kafka-broker-2-data:/var/lib/kafka/data
     depends_on:
       - zookeeper
 
-  # 🟥 Broker Kafka 3
+  # 🟥 Kafka Broker 3
   kafka-broker-3:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka-broker-3
@@ -54,8 +65,50 @@ services:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-3:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    volumes:
+      - kafka-broker-3-data:/var/lib/kafka/data
     depends_on:
       - zookeeper
+
+  # 🗂 PostgreSQL
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: events
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 🚀 Producteur Spring Boot
+  producer:
+    build:
+      context: ./producer
+    container_name: producer
+    depends_on:
+      - kafka-broker-1
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
+
+  # 🔍 Kafdrop
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKER_CONNECT: kafka-broker-1:9092,kafka-broker-2:9093,kafka-broker-3:9094
+    depends_on:
+      - kafka-broker-1
+
+volumes:
+  kafka-broker-1-data:
+  kafka-broker-2-data:
+  kafka-broker-3-data:
+  pgdata:

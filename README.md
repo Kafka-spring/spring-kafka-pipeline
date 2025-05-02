@@ -6,8 +6,8 @@
 ### **"📬 Publier des événements via une API REST → Kafka → Consommateur → Stockage en base PostgreSQL"**
 
 ---
-
-### 🌐 Ce projet simule une chaîne d’événements complète :
+### 🔁🌐 Fonctionnement
+Ce projet simule une chaîne d’événements complète :
 
 1. Postman envoie un `POST /api/events`
 2. Le Producteur Spring Boot publie l’événement sur un topic Kafka

@@ -55,7 +55,7 @@ Ce projet simule une chaîne d’événements complète :
 flowchart TD
   subgraph DockerCompose
 
-    subgraph Client
+    subgraph Producteur
       A[Postman] -->|POST /api/events| B[Spring Boot - Producer]
     end
 

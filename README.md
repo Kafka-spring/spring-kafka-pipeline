@@ -36,7 +36,7 @@ Ce projet simule une chaîne d’événements complète :
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="24"/> PostgreSQL | Base de données pour le stockage des événements |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="24"/> Docker Compose | Déploiement multi-conteneurs |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original-wordmark.svg" width="24"/> Apache Kafka | Broker de messages Kafka |
-| <img src="https://raw.githubusercontent.com/obsidiandynamics/kafdrop/master/src/main/resources/static/images/kafdrop-logo.png" width="24"/> Kafdrop | Interface web pour surveiller Kafka |
+| <img src="https://img.stackshare.io/service/12806/kafka-drop.png" width="24"/> Kafdrop | Interface web pour surveiller Kafka |
 
 
 ---

@@ -1,6 +1,6 @@
 # 🔄 kafka-event-pipeline
 
-## 🧰 Producteur/Consommateur Kafka avec Spring Boot + Monitoring Kafdrop
+## 🧰 Producteur/Consommateur Kafka avec Spring Boot + Monitoring Redpanda Console
 
 ### ❗ Problème à résoudre :  
 ### **"📬 Publier des événements via une API REST → Kafka → Consommateur → Stockage en base PostgreSQL"**
@@ -13,7 +13,7 @@ Ce projet simule une chaîne d’événements complète :
 2. Le Producteur Spring Boot publie l’événement sur un topic Kafka
 3. Le Cluster Kafka réplique le message sur 3 brokers
 4. Le Consommateur Spring Boot lit et sauvegarde les événements dans PostgreSQL
-5. Kafdrop permet d’inspecter les messages en temps réel
+5. Redpanda Console permet d’inspecter les messages en temps réel
 
 ---
 
@@ -23,7 +23,7 @@ Ce projet simule une chaîne d’événements complète :
 - 📮 API REST pour publier les événements
 - 👂 Consumer qui écoute le topic `events-topic`
 - 💾 Persistance des messages dans PostgreSQL
-- 🧭 Kafdrop UI pour visualiser les topics et partitions Kafka
+- 🧭 Redpanda Console pour visualiser les topics et partitions Kafka
 - 🐳 Infrastructure complète via `docker-compose`
 
 ---
@@ -36,8 +36,7 @@ Ce projet simule une chaîne d’événements complète :
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="24"/> PostgreSQL | Base de données pour le stockage des événements |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="24"/> Docker Compose | Déploiement multi-conteneurs |
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original-wordmark.svg" width="24"/> Apache Kafka | Broker de messages Kafka |
-| <img src="https://img.stackshare.io/service/12806/kafka-drop.png" width="24"/> Kafdrop | Interface web pour surveiller Kafka |
-
+| <img src="https://avatars.githubusercontent.com/u/85472287?s=200&v=4" width="24"/> Redpanda Console | Interface web pour surveiller Kafka |
 
 ---
 
@@ -48,8 +47,6 @@ Ce projet simule une chaîne d’événements complète :
 ---
 
 ## 📊 Diagramme de flux
-
-
 
 ```mermaid
 flowchart TD
@@ -70,7 +67,7 @@ flowchart TD
     end
 
     subgraph Monitoring
-      K[Kafdrop UI] --> C
+      K[Redpanda Console] --> C
     end
 
     subgraph Consommateur
@@ -79,7 +76,3 @@ flowchart TD
     end
 
   end
-
-
-
-

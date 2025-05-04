@@ -101,17 +101,6 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
     restart: on-failure
 
-  # ❌ Kafdrop désactivé
-  # kafdrop:
-  #   image: obsidiandynamics/kafdrop
-  #   container_name: kafdrop
-  #   ports:
-  #     - "9000:9000"
-  #   environment:
-  #     KAFKA_BROKER_CONNECT: kafka-broker-1:29092,kafka-broker-2:29093,kafka-broker-3:29094
-  #   depends_on:
-  #     - kafka-broker-1
-
   # ✅ Redpanda Console
   redpanda-console:
     image: docker.redpanda.com/redpandadata/console:latest

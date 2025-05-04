@@ -28,8 +28,12 @@ class EventProducerServiceTest {
         // Service à tester
         EventProducerService service = new EventProducerService(kafkaTemplate);
 
+        Event event = new Event();
+        event.setId(UUID.randomUUID().toString());
+        event.setTimestamp(Instant.now());
+
         // Appel de la méthode
-        service.sendEvent();
+        service.sendEvent(event);
 
         // Capture de l'argument envoyé au KafkaTemplate
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -43,12 +47,13 @@ class EventProducerServiceTest {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        Event event = mapper.readValue(jsonMessage, Event.class);
+        Event eventDeserialized = mapper.readValue(jsonMessage, Event.class);
 
         // Vérifications
-        assertNotNull(event.getId());
-        assertDoesNotThrow(() -> UUID.fromString(event.getId()));
-        assertNotNull(event.getTimestamp());
-        assertTrue(event.getTimestamp().isBefore(Instant.now().plusSeconds(1)));
+        assertNotNull(eventDeserialized.getId());
+        assertDoesNotThrow(() -> UUID.fromString(eventDeserialized.getId()));
+        assertNotNull(eventDeserialized.getTimestamp());
+        assertTrue(eventDeserialized.getTimestamp().isBefore(Instant.now().plusSeconds(1)));
     }
+
 }

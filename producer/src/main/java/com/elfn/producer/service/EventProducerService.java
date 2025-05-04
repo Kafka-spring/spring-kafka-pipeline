@@ -1,12 +1,10 @@
 package com.elfn.producer.service;
 
 import com.elfn.producer.model.Event;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,8 +16,6 @@ import java.util.UUID;
  * Cette classe utilise un KafkaTemplate pour publier des messages dans le topic "events-topic".
  * Chaque message contient un identifiant unique et un timestamp, générés automatiquement.
  *
- * L'envoi est planifié à une fréquence régulière (toutes les 100 millisecondes) grâce à l'annotation @Scheduled.
- *
  * @author Elimane
  */
 @Service
@@ -27,31 +23,35 @@ public class EventProducerService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    /**
-     * Injection du KafkaTemplate utilisé pour publier les messages dans Kafka.
-     *
-     * @param kafkaTemplate le producteur Kafka configuré
-     */
     public EventProducerService(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
-     * Envoie toutes les 100 ms un événement JSON (UUID + timestamp) dans le topic Kafka "events-topic".
+     * Envoie un événement JSON (UUID + timestamp) dans le topic Kafka "events-topic".
+     * L'identifiant est utilisé comme clé Kafka pour éviter les doublons dans la même partition.
+     *
+     * @param event événement à envoyer
      */
-    @Scheduled(fixedRate = 100)
-    public void sendEvent() {
+    public void sendEvent(Event event) {
         try {
-            Event event = new Event();
-            event.setId(UUID.randomUUID().toString());
-            event.setTimestamp(Instant.now());
+            // Génération automatique de l'ID et du timestamp si non fournis
+            if (event.getId() == null || event.getId().isEmpty()) {
+                event.setId(UUID.randomUUID().toString());
+            }
+            if (event.getTimestamp() == null) {
+                event.setTimestamp(Instant.now());
+            }
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
             objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
             String message = objectMapper.writeValueAsString(event);
 
-            kafkaTemplate.send("events-topic", message);
+            // Envoi du message avec l'ID comme clé
+            kafkaTemplate.send("events-topic", event.getId(), message);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -11,7 +11,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  # 🟦 Kafka Broker 1 (avec création du topic)
+  # 🟦 Kafka Broker 1
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka-broker-1
@@ -20,9 +20,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-1:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     volumes:
       - kafka-broker-1-data:/var/lib/kafka/data
@@ -30,12 +31,11 @@ services:
       - zookeeper
     command: >
       bash -c "
-        /etc/confluent/docker/run & 
-        sleep 20 && 
-        kafka-topics --create --if-not-exists --bootstrap-server kafka-broker-1:9092 --replication-factor 3 --partitions 3 --topic events-topic &&
+        /etc/confluent/docker/run &
+        sleep 20 &&
+        kafka-topics --create --if-not-exists --bootstrap-server kafka-broker-1:29092 --replication-factor 3 --partitions 3 --topic events-topic --config cleanup.policy=compact --config segment.ms=1000 --config min.cleanable.dirty.ratio=0.01 &&
         wait
       "
-
 
   # 🟩 Kafka Broker 2
   kafka-broker-2:
@@ -46,9 +46,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29093,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-2:29093,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     volumes:
       - kafka-broker-2-data:/var/lib/kafka/data
@@ -64,9 +65,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-3:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29094,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-3:29094,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     volumes:
       - kafka-broker-3-data:/var/lib/kafka/data
@@ -91,19 +93,33 @@ services:
     build:
       context: ./producer
     container_name: producer
+    ports:
+      - "8087:8087"
     depends_on:
       - kafka-broker-1
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+    restart: on-failure
 
-  # 🔍 Kafdrop
-  kafdrop:
-    image: obsidiandynamics/kafdrop
-    container_name: kafdrop
+  # ❌ Kafdrop désactivé
+  # kafdrop:
+  #   image: obsidiandynamics/kafdrop
+  #   container_name: kafdrop
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     KAFKA_BROKER_CONNECT: kafka-broker-1:29092,kafka-broker-2:29093,kafka-broker-3:29094
+  #   depends_on:
+  #     - kafka-broker-1
+
+  # ✅ Redpanda Console
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    container_name: redpanda-console
     ports:
-      - "9000:9000"
+      - "8088:8080"
     environment:
-      KAFKA_BROKER_CONNECT: kafka-broker-1:9092,kafka-broker-2:9093,kafka-broker-3:9094
+      - KAFKA_BROKERS=kafka-broker-1:29092,kafka-broker-2:29093,kafka-broker-3:29094
     depends_on:
       - kafka-broker-1
 

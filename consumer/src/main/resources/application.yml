@@ -4,7 +4,8 @@ spring:
   application:
     name: consumer
   kafka:
-    bootstrap-servers: kafka:9092
+    #    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka-broker-1:9092,kafka-broker-2:9093,kafka-broker-3:9094}
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
     consumer:
       group-id: my-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

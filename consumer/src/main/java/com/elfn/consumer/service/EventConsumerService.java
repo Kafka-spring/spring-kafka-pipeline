@@ -32,16 +32,17 @@ public class EventConsumerService {
      */
     @KafkaListener(topics = "events-topic", groupId = "my-group")
     public void consume(String message) {
-//        String[] parts = message.split(",");
-//        EventLog log = new EventLog();
-//        log.setEventId(parts[0]);
-//        log.setTimestamp(Instant.parse(parts[1]));
-//        repository.save(log);
+
         try {
             EventDTO dto = objectMapper.readValue(message, EventDTO.class);
             EventLog logMessage = new EventLog();
             logMessage.setEventId(dto.getId());
             logMessage.setTimestamp(dto.getTimestamp());
+
+            if (repository.existsById(Long.valueOf(dto.getId()))) {
+                log.warn("❌ Message déjà traité : {}", dto.getId());
+                return;
+            }
 
             repository.save(logMessage);
             log.info("✅ Événement persisté avec succès : {}", dto.getId());

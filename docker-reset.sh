@@ -1,5 +1,3 @@
-bash
-CopierModifier
 #!/bin/bash
 
 echo "🛑 Arrêt et nettoyage complet..."

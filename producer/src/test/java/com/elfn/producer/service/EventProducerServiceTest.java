@@ -29,7 +29,7 @@ class EventProducerServiceTest {
         EventProducerService service = new EventProducerService(kafkaTemplate);
 
         Event event = new Event();
-        event.setId(UUID.randomUUID().toString());
+        event.setEventId(UUID.randomUUID().toString());
         event.setTimestamp(Instant.now());
 
         // Appel de la méthode
@@ -50,8 +50,8 @@ class EventProducerServiceTest {
         Event eventDeserialized = mapper.readValue(jsonMessage, Event.class);
 
         // Vérifications
-        assertNotNull(eventDeserialized.getId());
-        assertDoesNotThrow(() -> UUID.fromString(eventDeserialized.getId()));
+        assertNotNull(eventDeserialized.getEventId());
+        assertDoesNotThrow(() -> UUID.fromString(eventDeserialized.getEventId()));
         assertNotNull(eventDeserialized.getTimestamp());
         assertTrue(eventDeserialized.getTimestamp().isBefore(Instant.now().plusSeconds(1)));
     }

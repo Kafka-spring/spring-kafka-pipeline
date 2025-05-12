@@ -35,7 +35,7 @@ class EventControllerIntegrationTest {
     void shouldSendEventSuccessfully() throws Exception {
         // Given
         Event event = new Event();
-        event.setId("123");
+        event.setEventId("123");
         event.setTimestamp(Instant.parse("2025-05-04T12:00:00Z"));
 
         // When

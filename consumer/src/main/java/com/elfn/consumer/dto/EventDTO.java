@@ -28,7 +28,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class EventDTO {
 
-    private String id;
+    private String eventId;
     private Instant timestamp;
 
 }

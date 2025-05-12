@@ -18,6 +18,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
-    private String id;
+    private String eventId;
     private Instant timestamp;
 }

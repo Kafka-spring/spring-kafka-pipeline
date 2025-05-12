@@ -36,8 +36,8 @@ public class EventProducerService {
     public void sendEvent(Event event) {
         try {
             // Génération automatique de l'ID et du timestamp si non fournis
-            if (event.getId() == null || event.getId().isEmpty()) {
-                event.setId(UUID.randomUUID().toString());
+            if (event.getEventId() == null || event.getEventId().isEmpty()) {
+                event.setEventId(UUID.randomUUID().toString());
             }
             if (event.getTimestamp() == null) {
                 event.setTimestamp(Instant.now());
@@ -50,7 +50,7 @@ public class EventProducerService {
             String message = objectMapper.writeValueAsString(event);
 
             // Envoi du message avec l'ID comme clé
-            kafkaTemplate.send("events-topic", event.getId(), message);
+            kafkaTemplate.send("events-topic", event.getEventId(), message);
 
         } catch (Exception e) {
             e.printStackTrace();

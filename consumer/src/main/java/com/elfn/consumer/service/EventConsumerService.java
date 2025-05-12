@@ -36,16 +36,17 @@ public class EventConsumerService {
         try {
             EventDTO dto = objectMapper.readValue(message, EventDTO.class);
             EventLog logMessage = new EventLog();
-            logMessage.setEventId(dto.getId());
+            logMessage.setEventId(dto.getEventId());
             logMessage.setTimestamp(dto.getTimestamp());
-
-            if (repository.existsById(Long.valueOf(dto.getId()))) {
-                log.warn("❌ Message déjà traité : {}", dto.getId());
+            log.debug("Contenu du message : {}", message);
+            if (repository.existsByEventId(dto.getEventId())) {
+                log.warn("Contenu du message : {}", message);
+                log.warn("❌ Message déjà traité : {}", dto.getEventId());
                 return;
             }
 
             repository.save(logMessage);
-            log.info("✅ Événement persisté avec succès : {}", dto.getId());
+            log.info("✅ Événement persisté avec succès : {}", dto.getEventId());
         } catch (Exception e) {
             log.error("❌ Échec de la désérialisation du message : {}", message, e);
         }

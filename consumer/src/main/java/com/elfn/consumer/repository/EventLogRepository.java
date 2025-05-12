@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @Author: Elimane
  */
 public interface EventLogRepository extends JpaRepository<EventLog, Long> {
+    boolean existsByEventId(String eventId);
 }
